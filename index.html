@@ -1,10 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>STUDY SEAT | 월간 좌석 예약</title>
+<title>STUDY SEAT | 이동수업 좌석 예약</title>
 <style>
 * { box-sizing: border-box; }
 :root {
@@ -97,16 +96,49 @@ input, select {
 .dot { width: 13px; height: 13px; border-radius: 4px; display: inline-block; }
 .seat-map {
   background: #f7f8fc; border: 1px solid var(--line);
-  border-radius: 12px; padding: 24px 12px; margin-top: 20px;
+  border-radius: 12px; padding: 28px 16px; margin-top: 20px;
 }
-.front {
-  width: 75%; margin: 0 auto 28px; padding: 11px;
-  text-align: center; background: #e7ebf4; color: #65708a;
-  font-size: 12px; letter-spacing: 4px; border-radius: 5px;
+
+/* 전자칠판 영역 */
+.smart-board-container {
+  width: 80%;
+  margin: 0 auto 30px;
+  background: #0f172a;
+  border: 3px solid #334155;
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  position: relative;
 }
+.smart-board-screen {
+  background: #1e293b;
+  border: 1px solid #475569;
+  border-radius: 4px;
+  padding: 10px;
+  color: #38bdf8;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 4px;
+}
+.board-indicator {
+  position: absolute;
+  top: 6px;
+  right: 10px;
+  width: 6px;
+  height: 6px;
+  background: #22c55e;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #22c55e;
+}
+
+/* 4행 6열 좌석 그리드 */
 .seats {
-  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 10px; max-width: 600px; margin: auto;
+  display: grid; 
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 10px; 
+  max-width: 650px; 
+  margin: auto;
 }
 .seat {
   min-height: 65px; border: 1px solid #cfd7e8;
@@ -167,34 +199,34 @@ footer { padding: 25px; text-align: center; color: #929bad; font-size: 12px; }
 </header>
 
 <section class="hero" id="home">
-  <div class="eyebrow">MONTHLY SEAT SELECTION</div>
-  <h1>이번 달, 나의 자리를 선택하세요.</h1>
+  <div class="eyebrow">CLASS SEAT SELECTION</div>
+  <h1>이동수업, 나의 자리를 선택하세요.</h1>
   <p>
-    매월 진행되는 학습 좌석 신청.<br>
+    실시간 대기열을 통한 공정한 좌석 신청 시스템.<br>
     원하는 자리를 선택하고 신청을 완료하세요.
   </p>
   <button onclick="startBooking()">좌석 선택하러 가기 →</button>
 </section>
 
 <main>
-  <div class="section-title">이번 달 좌석 신청</div>
+  <div class="section-title">이동수업 좌석 신청</div>
   <div class="sub">좌석을 미리 둘러보고 원하는 자리를 신청할 수 있습니다.</div>
 
   <div class="info-grid">
     <div class="info">
       <small>신청 대상</small>
-      <strong>재학생</strong>
+      <strong>이동수업 참여 학생</strong>
       <div class="sub">학생별 1개 좌석 신청</div>
     </div>
     <div class="info">
       <small>좌석 배정 방식</small>
-      <strong>점수 우선 배정</strong>
+      <strong>대기열 및 점수 우선</strong>
       <div class="sub">동점일 경우 먼저 신청한 학생 우선</div>
     </div>
     <div class="info">
       <small>신청 가능 좌석</small>
-      <strong id="availableCount">25석</strong>
-      <div class="sub">신청 현황에 따라 달라집니다.</div>
+      <strong id="availableCount">24석</strong>
+      <div class="sub">4행 6열 총 24석</div>
     </div>
   </div>
 
@@ -218,9 +250,9 @@ footer { padding: 25px; text-align: center; color: #929bad; font-size: 12px; }
         <option value="E">학생 E</option>
         <option value="F">학생 F</option>
       </select>
-      <label class="field-label" for="studentCode">확인용 번호 (테스트용)</label>
-      <input id="studentCode" placeholder="예: 10101">
-      <div class="notice">테스트 버전에서는 학생 선택만으로 이용할 수 있습니다. 실제 로그인 및 학생 인증 기능은 연결되어 있지 않습니다.</div>
+      <label class="field-label" for="studentCode">확인용 학번 (4자리)</label>
+      <input id="studentCode" placeholder="예: 2105">
+      <div class="notice">테스트 버전에서는 학생 선택만으로 이용할 수 있습니다. 실제 로그인 및 대기열 부하 분산 로직 시뮬레이션용 화면입니다.</div>
       <div class="actions">
         <button class="primary" onclick="enterSeats()">좌석 선택 시작 →</button>
       </div>
@@ -242,7 +274,13 @@ footer { padding: 25px; text-align: center; color: #929bad; font-size: 12px; }
       </div>
 
       <div class="seat-map">
-        <div class="front">FRONT · 칠판 / 교탁</div>
+        <!-- 전자칠판 영역 -->
+        <div class="smart-board-container">
+          <div class="board-indicator"></div>
+          <div class="smart-board-screen">FRONT · 전자칠판 / 교탁</div>
+        </div>
+        
+        <!-- 4행 6열 좌석 영역 -->
         <div class="seats" id="seats"></div>
       </div>
 
@@ -252,9 +290,7 @@ footer { padding: 25px; text-align: center; color: #929bad; font-size: 12px; }
       </div>
 
       <div class="notice">
-        좌석을 선택하면 신청이 접수됩니다. 여러 학생이 같은 좌석을 신청할 수 있으며,
-        최종 배정은 점수가 높은 학생을 우선으로 하고 동점이면 먼저 신청한 학생을 우선합니다.
-        이 화면은 테스트용이므로 실제 실시간 동기화는 지원하지 않습니다.
+        좌석을 선택하면 신청이 접수됩니다. 대기열 시스템을 통해 트래픽 분산 처리가 적용된 시뮬레이션 화면입니다.
       </div>
       <div class="actions">
         <button class="secondary" onclick="backToStudent()">← 학생 선택으로</button>
@@ -266,13 +302,13 @@ footer { padding: 25px; text-align: center; color: #929bad; font-size: 12px; }
       <div class="result">
         <div class="result-icon">✓</div>
         <h2>좌석 신청이 접수되었습니다.</h2>
-        <p class="sub">최종 좌석은 월간 배정 결과에 따라 확정됩니다.</p>
+        <p class="sub">선착순 서버 부하를 방지한 대기열을 통해 안전하게 처리되었습니다.</p>
         <div class="ticket">
-          <small>MONTHLY SEAT APPLICATION</small>
+          <small>CLASS SEAT APPLICATION</small>
           <div style="margin-top:18px">신청자</div>
           <strong id="resultStudent">학생 A</strong>
           <div style="margin-top:18px">희망 좌석</div>
-          <strong id="resultSeat">A-01</strong>
+          <strong id="resultSeat">A-1</strong>
           <div class="sub" style="margin-top:12px">접수 순서: <span id="resultOrder">1</span>번째 신청</div>
           <div class="sub">현재 상태: 배정 대기</div>
         </div>
@@ -288,16 +324,16 @@ footer { padding: 25px; text-align: center; color: #929bad; font-size: 12px; }
   <section class="panel" id="rules">
     <h2 class="section-title">좌석 배정 안내</h2>
     <p class="sub">
-      1. 학생은 매월 원하는 좌석 하나를 신청합니다.<br>
-      2. 같은 좌석에 신청자가 여러 명이어도 신청할 수 있습니다.<br>
+      1. 학생은 원하는 이동수업 좌석 하나를 신청합니다.<br>
+      2. 트래픽 폭주를 막기 위해 대기열 시스템을 거쳐 접속합니다.<br>
       3. 최종 배정 시 점수가 높은 학생이 우선합니다.<br>
       4. 점수가 같다면 먼저 신청한 학생이 우선합니다.<br>
-      5. 이 버전은 브라우저 안에서만 동작하는 시제품이며, 실제 학생 간 데이터 공유나 관리자 인증은 구현되지 않았습니다.
+      5. 4행 6열(총 24석) 구조로 전면 전자칠판 방향을 기준으로 배치됩니다.
     </p>
   </section>
 </main>
 
-<footer>STUDYSEAT · Monthly Seat Selection Prototype</footer>
+<footer>STUDYSEAT · Class Seat Selection Prototype</footer>
 
 <script>
 const students = {
@@ -312,9 +348,17 @@ const students = {
 let currentStudent = "";
 let selectedSeat = "";
 let applications = JSON.parse(localStorage.getItem("seatApplications") || "[]");
-const seatNames = Array.from({length:25}, (_, i) =>
-  "A-" + String(i + 1).padStart(2, "0")
-);
+
+// 4행 6열 (A-1 ~ D-6, 총 24석) 좌석 이름 목록 생성
+const rows = ['A', 'B', 'C', 'D'];
+const cols = 6;
+const seatNames = [];
+
+rows.forEach(r => {
+  for (let c = 1; c <= cols; c++) {
+    seatNames.push(`${r}-${c}`);
+  }
+});
 
 function saveApplications() {
   localStorage.setItem("seatApplications", JSON.stringify(applications));
@@ -376,7 +420,7 @@ function renderSeats() {
 
   const uniqueApplied = new Set(applications.map(a => a.seat)).size;
   document.getElementById("availableCount").textContent =
-    (25 - uniqueApplied) + "석";
+    (24 - uniqueApplied) + "석";
 }
 
 function updateSummary() {
