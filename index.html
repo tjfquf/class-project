@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>STUDY SEAT | 이동수업 좌석 예약</title>
+<title>STUDY SEAT | 이동수업 대기열 좌석 예약</title>
 <style>
 * { box-sizing: border-box; }
 :root {
@@ -36,9 +36,9 @@ nav a { color: inherit; text-decoration: none; }
   position: relative; overflow: hidden;
 }
 .hero::after {
-  content: "SEAT"; position: absolute;
+  content: "QUEUE"; position: absolute;
   right: 5%; bottom: -45px;
-  font-size: clamp(100px, 20vw, 240px);
+  font-size: clamp(80px, 18vw, 220px);
   font-weight: 900; color: #ffffff08;
   pointer-events: none;
 }
@@ -72,11 +72,11 @@ main { max-width: 1120px; padding: 35px 22px 70px; margin: auto; }
 .step {
   flex: 1; padding: 13px; border-radius: 8px;
   background: #f2f4f8; color: #929bad;
-  font-size: 12px; font-weight: bold;
+  font-size: 12px; font-weight: bold; text-align: center;
 }
 .step.active { background: #eaf0ff; color: var(--blue); }
 .field-label { display: block; font-size: 13px; font-weight: bold; margin: 17px 0 8px; }
-input, select {
+input {
   width: 100%; padding: 13px; border: 1px solid #dce1eb;
   border-radius: 8px; background: white; font-size: 14px;
 }
@@ -148,9 +148,7 @@ input, select {
 .seat small { display: block; font-size: 10px; margin-top: 5px; font-weight: normal; }
 .seat:hover:not(:disabled) { border-color: var(--blue); transform: translateY(-2px); }
 .seat.selected { background: var(--blue); color: white; border-color: var(--blue); }
-.seat.pending { background: #fff0d7; color: #93600d; border-color: #f0cf8b; }
-.seat:disabled { cursor: not-allowed; opacity: .6; }
-.seat.selected:disabled { opacity: 1; }
+.seat.booked { background: #f1f3f9; color: #929bad; border-color: #dce1eb; cursor: not-allowed; }
 .summary {
   margin-top: 20px; padding: 17px; border-radius: 9px;
   background: #f4f6fb; display: flex; justify-content: space-between;
@@ -160,15 +158,14 @@ input, select {
   background: #fff8e9; color: #7e5a15; padding: 13px;
   border-radius: 8px; font-size: 12px; line-height: 1.7; margin-top: 18px;
 }
-.result {
-  text-align: center; padding: 35px 10px;
+.queue-box {
+  text-align: center; padding: 45px 20px;
 }
-.result-icon {
-  width: 65px; height: 65px; border-radius: 50%;
-  background: #e8efff; color: var(--blue);
-  display: grid; place-items: center; font-size: 30px; margin: 0 auto 18px;
+.queue-spinner {
+  width: 50px; height: 50px; border: 4px solid #e2e7f0; border-top-color: var(--blue);
+  border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 20px;
 }
-.result h2 { margin-bottom: 8px; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .ticket {
   max-width: 400px; margin: 22px auto; padding: 23px;
   text-align: left; border: 1px dashed #9caee5; border-radius: 12px;
@@ -177,15 +174,6 @@ input, select {
 .ticket strong { font-size: 25px; color: var(--blue); display: block; margin-top: 8px; }
 .ticket small { color: var(--muted); }
 footer { padding: 25px; text-align: center; color: #929bad; font-size: 12px; }
-@media(max-width:650px) {
-  header { padding: 0 5%; }
-  nav { gap: 10px; font-size: 12px; }
-  .hero { padding: 42px 6%; }
-  .info-grid { grid-template-columns: 1fr; }
-  .panel { padding: 17px; }
-  .seats { gap: 6px; }
-  .seat { min-height: 57px; font-size: 11px; }
-}
 </style>
 </head>
 <body>
@@ -199,290 +187,304 @@ footer { padding: 25px; text-align: center; color: #929bad; font-size: 12px; }
 </header>
 
 <section class="hero" id="home">
-  <div class="eyebrow">CLASS SEAT SELECTION</div>
-  <h1>이동수업, 나의 자리를 선택하세요.</h1>
+  <div class="eyebrow">QUEUE-BASED SEAT RESERVATION</div>
+  <h1>안정적인 대기열 좌석 예약 시스템</h1>
   <p>
-    실시간 대기열을 통한 공정한 좌석 신청 시스템.<br>
-    원하는 자리를 선택하고 신청을 완료하세요.
+    동시 접속자 폭주로 인한 서버 다운을 방지하는<br>
+    순차적 대기열 시스템 기반 이동수업 좌석 신청.
   </p>
-  <button onclick="startBooking()">좌석 선택하러 가기 →</button>
+  <button onclick="startBooking()">예약 시스템 입장하기 →</button>
 </section>
 
 <main>
   <div class="section-title">이동수업 좌석 신청</div>
-  <div class="sub">좌석을 미리 둘러보고 원하는 자리를 신청할 수 있습니다.</div>
+  <div class="sub">학번과 이름을 직접 입력하여 대기열을 거친 뒤 선착순으로 자리를 선점하세요.</div>
 
   <div class="info-grid">
     <div class="info">
-      <small>신청 대상</small>
-      <strong>이동수업 참여 학생</strong>
-      <div class="sub">학생별 1개 좌석 신청</div>
+      <small>시스템 방식</small>
+      <strong>대기열 제어</strong>
+      <div class="sub">서버 과부하 원천 차단</div>
     </div>
     <div class="info">
-      <small>좌석 배정 방식</small>
-      <strong>대기열 및 점수 우선</strong>
-      <div class="sub">동점일 경우 먼저 신청한 학생 우선</div>
+      <small>좌석 규모</small>
+      <strong>4행 6열 (24석)</strong>
+      <div class="sub">전면 전자칠판 기준 배치</div>
     </div>
     <div class="info">
-      <small>신청 가능 좌석</small>
+      <small>잔여 좌석</small>
       <strong id="availableCount">24석</strong>
-      <div class="sub">4행 6열 총 24석</div>
+      <div class="sub">실시간 반영</div>
     </div>
   </div>
 
   <section id="reservation" class="panel">
     <div class="steps">
-      <div class="step active" id="step1">01 · 학생 확인</div>
-      <div class="step" id="step2">02 · 좌석 선택</div>
-      <div class="step" id="step3">03 · 신청 완료</div>
+      <div class="step active" id="step1">01 · 정보 입력</div>
+      <div class="step" id="step2">02 · 대기열 대기</div>
+      <div class="step" id="step3">03 · 좌석 선택</div>
+      <div class="step" id="step4">04 · 예약 완료</div>
     </div>
 
-    <div id="studentPage">
-      <h2 class="section-title">좌석 신청 시작하기</h2>
-      <p class="sub">학생 정보를 확인한 뒤 좌석 선택 화면으로 이동합니다.</p>
-      <label class="field-label" for="student">학생 선택</label>
-      <select id="student">
-        <option value="">학생을 선택하세요</option>
-        <option value="A">학생 A</option>
-        <option value="B">학생 B</option>
-        <option value="C">학생 C</option>
-        <option value="D">학생 D</option>
-        <option value="E">학생 E</option>
-        <option value="F">학생 F</option>
-      </select>
-      <label class="field-label" for="studentCode">확인용 학번 (4자리)</label>
-      <input id="studentCode" placeholder="예: 2105">
-      <div class="notice">테스트 버전에서는 학생 선택만으로 이용할 수 있습니다. 실제 로그인 및 대기열 부하 분산 로직 시뮬레이션용 화면입니다.</div>
+    <!-- 1단계: 정보 직접 입력 -->
+    <div id="inputPage">
+      <h2 class="section-title">학적 정보 입력</h2>
+      <p class="sub">본인의 학번과 이름을 정확히 입력해 주세요.</p>
+      
+      <label class="field-label" for="studentId">학번 (4자리)</label>
+      <input id="studentId" placeholder="예: 2105" maxlength="4">
+
+      <label class="field-label" for="studentName">이름</label>
+      <input id="studentName" placeholder="예: 홍길동">
+
+      <div class="notice">정각 접속 시 트래픽 급증을 막기 위해 대기열 티켓이 발급됩니다.</div>
       <div class="actions">
-        <button class="primary" onclick="enterSeats()">좌석 선택 시작 →</button>
+        <button class="primary" onclick="enterQueue()">대기열 줄 서기 →</button>
       </div>
     </div>
 
+    <!-- 2단계: 대기열 시스템 화면 -->
+    <div id="queuePage" class="hidden">
+      <div class="queue-box">
+        <div class="queue-spinner"></div>
+        <h2 class="section-title">접속 대기 중입니다</h2>
+        <p class="sub">서버 안정화를 위해 순차적으로 입장 처리 중입니다.</p>
+        <div style="margin: 25px 0; font-size: 18px; font-weight: bold; color: var(--blue);">
+          내 앞 대기 인원: <span id="queueNumber">5</span>명
+        </div>
+        <div class="sub" id="queueMsg">잠시만 기다려 주세요. 창을 닫으면 순서가 밀립니다.</div>
+      </div>
+    </div>
+
+    <!-- 3단계: 좌석 선택 화면 -->
     <div id="seatPage" class="hidden">
       <div class="booking-top">
         <div>
-          <h2 class="section-title">좌석 선택</h2>
-          <div class="sub" id="welcomeText">원하는 좌석을 선택하세요.</div>
+          <h2 class="section-title">실시간 좌석 선택</h2>
+          <div class="sub" id="welcomeText">원하는 자리를 선택하세요.</div>
         </div>
-        <div class="timer" id="selectionStatus">좌석을 선택해 주세요</div>
+        <div class="timer" id="selectionStatus">선착순 진행 중</div>
       </div>
 
       <div class="legend">
         <span><i class="dot" style="background:white;border:1px solid #cfd7e8"></i>선택 가능</span>
-        <span><i class="dot" style="background:#315efb"></i>내가 선택한 좌석</span>
-        <span><i class="dot" style="background:#fff0d7;border:1px solid #f0cf8b"></i>신청 대기</span>
+        <span><i class="dot" style="background:#315efb"></i>내가 선택한 자리</span>
+        <span><i class="dot" style="background:#f1f3f9;border:1px solid #dce1eb"></i>예약 완료됨</span>
       </div>
 
       <div class="seat-map">
-        <!-- 전자칠판 영역 -->
         <div class="smart-board-container">
           <div class="board-indicator"></div>
           <div class="smart-board-screen">FRONT · 전자칠판 / 교탁</div>
         </div>
-        
-        <!-- 4행 6열 좌석 영역 -->
         <div class="seats" id="seats"></div>
       </div>
 
       <div class="summary">
         <div>선택한 좌석: <strong id="chosenSeat">없음</strong></div>
-        <div>신청 점수: <strong id="chosenScore">-</strong></div>
+        <div>신청자: <strong id="chosenStudentInfo">-</strong></div>
       </div>
 
       <div class="notice">
-        좌석을 선택하면 신청이 접수됩니다. 대기열 시스템을 통해 트래픽 분산 처리가 적용된 시뮬레이션 화면입니다.
+        자리를 클릭한 뒤 아래 확정 버튼을 누르면 즉시 선점됩니다.
       </div>
       <div class="actions">
-        <button class="secondary" onclick="backToStudent()">← 학생 선택으로</button>
-        <button class="primary" onclick="submitSeat()">이 좌석으로 신청하기</button>
+        <button class="primary" onclick="confirmSeat()">이 자리로 예약 확정하기</button>
       </div>
     </div>
 
+    <!-- 4단계: 완료 화면 -->
     <div id="resultPage" class="hidden">
-      <div class="result">
-        <div class="result-icon">✓</div>
-        <h2>좌석 신청이 접수되었습니다.</h2>
-        <p class="sub">선착순 서버 부하를 방지한 대기열을 통해 안전하게 처리되었습니다.</p>
+      <div class="queue-box" style="padding: 10px 0;">
+        <div style="font-size: 40px; margin-bottom: 10px;">🎉</div>
+        <h2>좌석 예약이 완료되었습니다!</h2>
+        <p class="sub">대기열을 거쳐 안전하게 배정되었습니다.</p>
         <div class="ticket">
-          <small>CLASS SEAT APPLICATION</small>
-          <div style="margin-top:18px">신청자</div>
-          <strong id="resultStudent">학생 A</strong>
-          <div style="margin-top:18px">희망 좌석</div>
-          <strong id="resultSeat">A-1</strong>
-          <div class="sub" style="margin-top:12px">접수 순서: <span id="resultOrder">1</span>번째 신청</div>
-          <div class="sub">현재 상태: 배정 대기</div>
+          <small>SEAT RESERVATION TICKET</small>
+          <div style="margin-top:14px">학번 / 이름</div>
+          <strong id="ticketStudent" style="font-size:18px">2105 홍길동</strong>
+          <div style="margin-top:14px">확정 좌석</div>
+          <strong id="ticketSeat">A-1</strong>
+          <div class="sub" style="margin-top:10px">상태: 예약 확정 완료</div>
         </div>
         <div class="actions" style="justify-content:center">
-          <button class="primary" onclick="showMyApplication()">내 신청 확인</button>
-          <button class="secondary" onclick="goHome()">홈으로</button>
+          <button class="secondary" onclick="resetSystem()">처음으로 돌아가기</button>
         </div>
-        <p class="sub" id="myApplication"></p>
       </div>
     </div>
   </section>
 
   <section class="panel" id="rules">
-    <h2 class="section-title">좌석 배정 안내</h2>
+    <h2 class="section-title">대기열 시스템 안내</h2>
     <p class="sub">
-      1. 학생은 원하는 이동수업 좌석 하나를 신청합니다.<br>
-      2. 트래픽 폭주를 막기 위해 대기열 시스템을 거쳐 접속합니다.<br>
-      3. 최종 배정 시 점수가 높은 학생이 우선합니다.<br>
-      4. 점수가 같다면 먼저 신청한 학생이 우선합니다.<br>
-      5. 4행 6열(총 24석) 구조로 전면 전자칠판 방향을 기준으로 배치됩니다.
+      1. 학번과 이름을 직접 입력하여 접속합니다.<br>
+      2. 서버 트래픽 폭주를 막기 위해 가상 대기열을 거쳐 순차적으로 입장합니다.<br>
+      3. 입장 후 4행 6열(총 24석) 중 원하는 빈 자리를 선착순으로 선택합니다.<br>
+      4. 이미 다른 학생이 예약한 자리는 선택할 수 없습니다.
     </p>
   </section>
 </main>
 
-<footer>STUDYSEAT · Class Seat Selection Prototype</footer>
+<footer>STUDYSEAT · Queue-Based Seat Reservation System</footer>
 
 <script>
-const students = {
-  A: { score: 85 },
-  B: { score: 92 },
-  C: { score: 78 },
-  D: { score: 92 },
-  E: { score: 88 },
-  F: { score: 80 }
-};
-
-let currentStudent = "";
+let studentId = "";
+let studentName = "";
 let selectedSeat = "";
-let applications = JSON.parse(localStorage.getItem("seatApplications") || "[]");
+let queueTimer = null;
+let queueCount = 0;
 
-// 4행 6열 (A-1 ~ D-6, 총 24석) 좌석 이름 목록 생성
+// 로컬 스토리지에서 예약 정보 관리 (좌석별 예약자 저장)
+let bookedSeats = JSON.parse(localStorage.getItem("queueBookedSeats") || "{}");
+
 const rows = ['A', 'B', 'C', 'D'];
 const cols = 6;
 const seatNames = [];
-
 rows.forEach(r => {
   for (let c = 1; c <= cols; c++) {
     seatNames.push(`${r}-${c}`);
   }
 });
 
-function saveApplications() {
-  localStorage.setItem("seatApplications", JSON.stringify(applications));
-}
-
 function startBooking() {
   document.getElementById("reservation").scrollIntoView({behavior:"smooth"});
 }
 
-function enterSeats() {
-  const student = document.getElementById("student").value;
-  if (!student) {
-    alert("학생을 선택해 주세요.");
+function setStep(n) {
+  [1,2,3,4].forEach(i => {
+    const el = document.getElementById("step" + i);
+    if(el) el.classList.toggle("active", i === n);
+  });
+}
+
+// 1단계 -> 대기열 진입
+function enterQueue() {
+  studentId = document.getElementById("studentId").value.trim();
+  studentName = document.getElementById("studentName").value.trim();
+
+  if (!studentId || studentId.length !== 4) {
+    alert("올바른 4자리 학번을 입력해 주세요.");
     return;
   }
-  currentStudent = student;
-  selectedSeat = "";
-  const existing = applications.find(a => a.student === student);
-  if (existing) selectedSeat = existing.seat;
+  if (!studentName) {
+    alert("이름을 입력해 주세요.");
+    return;
+  }
 
-  document.getElementById("studentPage").classList.add("hidden");
-  document.getElementById("seatPage").classList.remove("hidden");
-  document.getElementById("resultPage").classList.add("hidden");
-  document.getElementById("welcomeText").textContent =
-    "학생 " + student + " · 점수 " + students[student].score + "점";
+  // 이미 예약한 적이 있는지 확인
+  for (let seat in bookedSeats) {
+    if (bookedSeats[seat].id === studentId) {
+      alert(`이미 ${seat} 자리에 예약된 학번입니다.`);
+      return;
+    }
+  }
+
+  // 화면 전환: 대기열 페이지
+  document.getElementById("inputPage").classList.add("hidden");
+  document.getElementById("queuePage").classList.remove("hidden");
   setStep(2);
+
+  // 랜덤 대기 인원 부여 (서버 트래픽 분산 시뮬레이션)
+  queueCount = Math.floor(Math.random() * 5) + 3; // 3~7명 대기
+  document.getElementById("queueNumber").textContent = queueCount;
+
+  // 대기열 카운트다운 시작 (1초마다 1명씩 줄어듦 -> 0이 되면 좌석 선택 페이지로 진입)
+  if (queueTimer) clearInterval(queueTimer);
+  queueTimer = setInterval(() => {
+    queueCount--;
+    if (queueCount > 0) {
+      document.getElementById("queueNumber").textContent = queueCount;
+    } else {
+      clearInterval(queueTimer);
+      enterSeatSelection();
+    }
+  }, 800);
+}
+
+// 3단계: 대기열 통과 후 좌석 선택 화면으로 이동
+function enterSeatSelection() {
+  document.getElementById("queuePage").classList.add("hidden");
+  document.getElementById("seatPage").classList.remove("hidden");
+  setStep(3);
+  
+  document.getElementById("welcomeText").textContent = `${studentId} ${studentName}님, 원하는 자리를 선택하세요.`;
   renderSeats();
-  updateSummary();
 }
 
-function setStep(n) {
-  [1,2,3].forEach(i =>
-    document.getElementById("step" + i).classList.toggle("active", i === n)
-  );
-}
-
+// 좌석 렌더링
 function renderSeats() {
+  bookedSeats = JSON.parse(localStorage.getItem("queueBookedSeats") || "{}");
   const container = document.getElementById("seats");
   container.innerHTML = "";
 
   seatNames.forEach(seat => {
-    const applicants = applications.filter(a => a.seat === seat);
-    const mine = applicants.some(a => a.student === currentStudent);
+    const isBooked = bookedSeats[seat];
+    const isMine = isBooked && isBooked.id === studentId;
     const button = document.createElement("button");
-    button.className = "seat" + (selectedSeat === seat ? " selected" : "");
-    if (applicants.length && !mine) button.classList.add("pending");
+    
+    button.className = "seat";
+    if (selectedSeat === seat) button.classList.add("selected");
+    if (isBooked) button.classList.add("booked");
 
     button.innerHTML = seat + "<small>" +
-      (mine ? "내 신청" : applicants.length ? "신청 " + applicants.length + "명" : "선택 가능") +
+      (isMine ? "내 예약" : isBooked ? "예약됨" : "선택 가능") +
       "</small>";
 
-    button.onclick = () => {
-      selectedSeat = seat;
-      renderSeats();
-      updateSummary();
-    };
+    if (isBooked) {
+      button.disabled = true;
+    } else {
+      button.onclick = () => {
+        selectedSeat = seat;
+        renderSeats();
+        updateSummary();
+      };
+    }
     container.appendChild(button);
   });
 
-  const uniqueApplied = new Set(applications.map(a => a.seat)).size;
-  document.getElementById("availableCount").textContent =
-    (24 - uniqueApplied) + "석";
+  const bookedCount = Object.keys(bookedSeats).length;
+  document.getElementById("availableCount").textContent = (24 - bookedCount) + "석";
 }
 
 function updateSummary() {
   document.getElementById("chosenSeat").textContent = selectedSeat || "없음";
-  document.getElementById("chosenScore").textContent =
-    students[currentStudent].score + "점";
-  document.getElementById("selectionStatus").textContent =
-    selectedSeat ? selectedSeat + " 선택됨" : "좌석을 선택해 주세요";
+  document.getElementById("chosenStudentInfo").textContent = `${studentId} ${studentName}`;
 }
 
-function submitSeat() {
+// 4단계: 좌석 예약 확정
+function confirmSeat() {
   if (!selectedSeat) {
-    alert("먼저 원하는 좌석을 선택해 주세요.");
+    alert("원하는 자리를 먼저 선택해 주세요.");
     return;
   }
 
-  const existing = applications.find(a => a.student === currentStudent);
-  if (existing) {
-    existing.seat = selectedSeat;
-    existing.score = students[currentStudent].score;
-    existing.updatedAt = Date.now();
-  } else {
-    applications.push({
-      student: currentStudent,
-      seat: selectedSeat,
-      score: students[currentStudent].score,
-      time: Date.now()
-    });
+  // 동시성 충돌 방지 체크 (다른 사람이 먼저 선점했는지 확인)
+  bookedSeats = JSON.parse(localStorage.getItem("queueBookedSeats") || "{}");
+  if (bookedSeats[selectedSeat]) {
+    alert("이미 다른 학생이 선택한 자리입니다. 다른 자리를 선택해주세요!");
+    selectedSeat = "";
+    renderSeats();
+    updateSummary();
+    return;
   }
 
-  saveApplications();
+  // 예약 정보 저장
+  bookedSeats[selectedSeat] = { id: studentId, name: studentName, time: Date.now() };
+  localStorage.setItem("queueBookedSeats", JSON.stringify(bookedSeats));
+
+  // 완료 페이지로 이동
   document.getElementById("seatPage").classList.add("hidden");
   document.getElementById("resultPage").classList.remove("hidden");
-  document.getElementById("resultStudent").textContent = "학생 " + currentStudent;
-  document.getElementById("resultSeat").textContent = selectedSeat;
-  document.getElementById("resultOrder").textContent =
-    applications.findIndex(a => a.student === currentStudent) + 1;
-  setStep(3);
-  renderSeats();
+  setStep(4);
+
+  document.getElementById("ticketStudent").textContent = `${studentId} ${studentName}`;
+  document.getElementById("ticketSeat").textContent = selectedSeat;
 }
 
-function showMyApplication() {
-  const a = applications.find(a => a.student === currentStudent);
-  document.getElementById("myApplication").textContent = a
-    ? "현재 희망 좌석: " + a.seat + " · 점수: " + a.score + "점 · 최종 배정 대기 중"
-    : "신청 내역이 없습니다.";
+function resetSystem() {
+  localStorage.removeItem("queueBookedSeats");
+  location.reload();
 }
-
-function backToStudent() {
-  document.getElementById("seatPage").classList.add("hidden");
-  document.getElementById("studentPage").classList.remove("hidden");
-  setStep(1);
-}
-
-function goHome() {
-  document.getElementById("resultPage").classList.add("hidden");
-  document.getElementById("studentPage").classList.remove("hidden");
-  setStep(1);
-  document.getElementById("reservation").scrollIntoView({behavior:"smooth"});
-}
-
-renderSeats();
 </script>
 </body>
 </html>
