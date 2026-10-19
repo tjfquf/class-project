@@ -1,0 +1,444 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STUDY SEAT | 월간 좌석 예약</title>
+<style>
+* { box-sizing: border-box; }
+:root {
+  --navy: #172554;
+  --blue: #315efb;
+  --light: #f4f6fb;
+  --line: #e2e7f0;
+  --muted: #778198;
+}
+body {
+  margin: 0;
+  font-family: "Pretendard", "Malgun Gothic", sans-serif;
+  color: #18213a;
+  background: var(--light);
+}
+button { cursor: pointer; font: inherit; }
+header {
+  height: 70px; padding: 0 7%;
+  display: flex; align-items: center;
+  justify-content: space-between;
+  background: white; border-bottom: 1px solid var(--line);
+}
+.logo { font-size: 21px; font-weight: 900; letter-spacing: -1px; }
+.logo span { color: var(--blue); }
+nav { display: flex; gap: 25px; color: #586176; font-size: 14px; }
+nav a { color: inherit; text-decoration: none; }
+.hero {
+  background: var(--navy); color: white;
+  padding: 58px 8% 65px;
+  position: relative; overflow: hidden;
+}
+.hero::after {
+  content: "SEAT"; position: absolute;
+  right: 5%; bottom: -45px;
+  font-size: clamp(100px, 20vw, 240px);
+  font-weight: 900; color: #ffffff08;
+  pointer-events: none;
+}
+.eyebrow { color: #a9bbff; font-size: 12px; letter-spacing: 2px; font-weight: bold; }
+.hero h1 { font-size: clamp(32px, 5vw, 48px); margin: 17px 0 12px; letter-spacing: -2px; }
+.hero p { color: #c8d1e8; line-height: 1.8; font-size: 14px; }
+.hero button {
+  margin-top: 22px; background: white; color: var(--navy);
+  border: 0; border-radius: 8px; padding: 15px 23px;
+  font-weight: 800;
+}
+main { max-width: 1120px; padding: 35px 22px 70px; margin: auto; }
+.section-title { font-size: 21px; font-weight: 850; margin: 0 0 7px; }
+.sub { color: var(--muted); font-size: 13px; line-height: 1.7; }
+.info-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 15px; margin: 25px 0 38px;
+}
+.info {
+  background: white; border: 1px solid var(--line);
+  padding: 20px; border-radius: 12px;
+}
+.info small { color: var(--muted); }
+.info strong { display: block; font-size: 20px; margin: 10px 0 6px; }
+.panel {
+  background: white; border: 1px solid var(--line);
+  border-radius: 14px; padding: 25px; margin-top: 18px;
+}
+.hidden { display: none !important; }
+.steps { display: flex; gap: 10px; margin-bottom: 26px; }
+.step {
+  flex: 1; padding: 13px; border-radius: 8px;
+  background: #f2f4f8; color: #929bad;
+  font-size: 12px; font-weight: bold;
+}
+.step.active { background: #eaf0ff; color: var(--blue); }
+.field-label { display: block; font-size: 13px; font-weight: bold; margin: 17px 0 8px; }
+input, select {
+  width: 100%; padding: 13px; border: 1px solid #dce1eb;
+  border-radius: 8px; background: white; font-size: 14px;
+}
+.primary, .secondary {
+  border: 0; padding: 13px 19px; border-radius: 8px; font-weight: bold;
+}
+.primary { color: white; background: var(--blue); }
+.secondary { color: #34405c; background: #edf0f6; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }
+.booking-top {
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 15px; margin-bottom: 22px;
+}
+.timer { background: #fff2ed; color: #c64b2f; padding: 10px 13px; border-radius: 8px; font-weight: bold; font-size: 13px; }
+.legend { display: flex; gap: 15px; flex-wrap: wrap; font-size: 12px; color: #69738a; }
+.legend span { display: flex; align-items: center; gap: 6px; }
+.dot { width: 13px; height: 13px; border-radius: 4px; display: inline-block; }
+.seat-map {
+  background: #f7f8fc; border: 1px solid var(--line);
+  border-radius: 12px; padding: 24px 12px; margin-top: 20px;
+}
+.front {
+  width: 75%; margin: 0 auto 28px; padding: 11px;
+  text-align: center; background: #e7ebf4; color: #65708a;
+  font-size: 12px; letter-spacing: 4px; border-radius: 5px;
+}
+.seats {
+  display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px; max-width: 600px; margin: auto;
+}
+.seat {
+  min-height: 65px; border: 1px solid #cfd7e8;
+  background: white; border-radius: 8px; color: #35405c;
+  font-size: 12px; font-weight: bold; transition: .15s;
+}
+.seat small { display: block; font-size: 10px; margin-top: 5px; font-weight: normal; }
+.seat:hover:not(:disabled) { border-color: var(--blue); transform: translateY(-2px); }
+.seat.selected { background: var(--blue); color: white; border-color: var(--blue); }
+.seat.pending { background: #fff0d7; color: #93600d; border-color: #f0cf8b; }
+.seat:disabled { cursor: not-allowed; opacity: .6; }
+.seat.selected:disabled { opacity: 1; }
+.summary {
+  margin-top: 20px; padding: 17px; border-radius: 9px;
+  background: #f4f6fb; display: flex; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap; font-size: 13px;
+}
+.notice {
+  background: #fff8e9; color: #7e5a15; padding: 13px;
+  border-radius: 8px; font-size: 12px; line-height: 1.7; margin-top: 18px;
+}
+.result {
+  text-align: center; padding: 35px 10px;
+}
+.result-icon {
+  width: 65px; height: 65px; border-radius: 50%;
+  background: #e8efff; color: var(--blue);
+  display: grid; place-items: center; font-size: 30px; margin: 0 auto 18px;
+}
+.result h2 { margin-bottom: 8px; }
+.ticket {
+  max-width: 400px; margin: 22px auto; padding: 23px;
+  text-align: left; border: 1px dashed #9caee5; border-radius: 12px;
+  background: #f7f9ff;
+}
+.ticket strong { font-size: 25px; color: var(--blue); display: block; margin-top: 8px; }
+.ticket small { color: var(--muted); }
+footer { padding: 25px; text-align: center; color: #929bad; font-size: 12px; }
+@media(max-width:650px) {
+  header { padding: 0 5%; }
+  nav { gap: 10px; font-size: 12px; }
+  .hero { padding: 42px 6%; }
+  .info-grid { grid-template-columns: 1fr; }
+  .panel { padding: 17px; }
+  .seats { gap: 6px; }
+  .seat { min-height: 57px; font-size: 11px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">STUDY<span>SEAT.</span></div>
+  <nav>
+    <a href="#home">홈</a>
+    <a href="#reservation">자리 예약</a>
+    <a href="#rules">이용 안내</a>
+  </nav>
+</header>
+
+<section class="hero" id="home">
+  <div class="eyebrow">MONTHLY SEAT SELECTION</div>
+  <h1>이번 달, 나의 자리를 선택하세요.</h1>
+  <p>
+    매월 진행되는 학습 좌석 신청.<br>
+    원하는 자리를 선택하고 신청을 완료하세요.
+  </p>
+  <button onclick="startBooking()">좌석 선택하러 가기 →</button>
+</section>
+
+<main>
+  <div class="section-title">이번 달 좌석 신청</div>
+  <div class="sub">좌석을 미리 둘러보고 원하는 자리를 신청할 수 있습니다.</div>
+
+  <div class="info-grid">
+    <div class="info">
+      <small>신청 대상</small>
+      <strong>재학생</strong>
+      <div class="sub">학생별 1개 좌석 신청</div>
+    </div>
+    <div class="info">
+      <small>좌석 배정 방식</small>
+      <strong>점수 우선 배정</strong>
+      <div class="sub">동점일 경우 먼저 신청한 학생 우선</div>
+    </div>
+    <div class="info">
+      <small>신청 가능 좌석</small>
+      <strong id="availableCount">25석</strong>
+      <div class="sub">신청 현황에 따라 달라집니다.</div>
+    </div>
+  </div>
+
+  <section id="reservation" class="panel">
+    <div class="steps">
+      <div class="step active" id="step1">01 · 학생 확인</div>
+      <div class="step" id="step2">02 · 좌석 선택</div>
+      <div class="step" id="step3">03 · 신청 완료</div>
+    </div>
+
+    <div id="studentPage">
+      <h2 class="section-title">좌석 신청 시작하기</h2>
+      <p class="sub">학생 정보를 확인한 뒤 좌석 선택 화면으로 이동합니다.</p>
+      <label class="field-label" for="student">학생 선택</label>
+      <select id="student">
+        <option value="">학생을 선택하세요</option>
+        <option value="A">학생 A</option>
+        <option value="B">학생 B</option>
+        <option value="C">학생 C</option>
+        <option value="D">학생 D</option>
+        <option value="E">학생 E</option>
+        <option value="F">학생 F</option>
+      </select>
+      <label class="field-label" for="studentCode">확인용 번호 (테스트용)</label>
+      <input id="studentCode" placeholder="예: 10101">
+      <div class="notice">테스트 버전에서는 학생 선택만으로 이용할 수 있습니다. 실제 로그인 및 학생 인증 기능은 연결되어 있지 않습니다.</div>
+      <div class="actions">
+        <button class="primary" onclick="enterSeats()">좌석 선택 시작 →</button>
+      </div>
+    </div>
+
+    <div id="seatPage" class="hidden">
+      <div class="booking-top">
+        <div>
+          <h2 class="section-title">좌석 선택</h2>
+          <div class="sub" id="welcomeText">원하는 좌석을 선택하세요.</div>
+        </div>
+        <div class="timer" id="selectionStatus">좌석을 선택해 주세요</div>
+      </div>
+
+      <div class="legend">
+        <span><i class="dot" style="background:white;border:1px solid #cfd7e8"></i>선택 가능</span>
+        <span><i class="dot" style="background:#315efb"></i>내가 선택한 좌석</span>
+        <span><i class="dot" style="background:#fff0d7;border:1px solid #f0cf8b"></i>신청 대기</span>
+      </div>
+
+      <div class="seat-map">
+        <div class="front">FRONT · 칠판 / 교탁</div>
+        <div class="seats" id="seats"></div>
+      </div>
+
+      <div class="summary">
+        <div>선택한 좌석: <strong id="chosenSeat">없음</strong></div>
+        <div>신청 점수: <strong id="chosenScore">-</strong></div>
+      </div>
+
+      <div class="notice">
+        좌석을 선택하면 신청이 접수됩니다. 여러 학생이 같은 좌석을 신청할 수 있으며,
+        최종 배정은 점수가 높은 학생을 우선으로 하고 동점이면 먼저 신청한 학생을 우선합니다.
+        이 화면은 테스트용이므로 실제 실시간 동기화는 지원하지 않습니다.
+      </div>
+      <div class="actions">
+        <button class="secondary" onclick="backToStudent()">← 학생 선택으로</button>
+        <button class="primary" onclick="submitSeat()">이 좌석으로 신청하기</button>
+      </div>
+    </div>
+
+    <div id="resultPage" class="hidden">
+      <div class="result">
+        <div class="result-icon">✓</div>
+        <h2>좌석 신청이 접수되었습니다.</h2>
+        <p class="sub">최종 좌석은 월간 배정 결과에 따라 확정됩니다.</p>
+        <div class="ticket">
+          <small>MONTHLY SEAT APPLICATION</small>
+          <div style="margin-top:18px">신청자</div>
+          <strong id="resultStudent">학생 A</strong>
+          <div style="margin-top:18px">희망 좌석</div>
+          <strong id="resultSeat">A-01</strong>
+          <div class="sub" style="margin-top:12px">접수 순서: <span id="resultOrder">1</span>번째 신청</div>
+          <div class="sub">현재 상태: 배정 대기</div>
+        </div>
+        <div class="actions" style="justify-content:center">
+          <button class="primary" onclick="showMyApplication()">내 신청 확인</button>
+          <button class="secondary" onclick="goHome()">홈으로</button>
+        </div>
+        <p class="sub" id="myApplication"></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="rules">
+    <h2 class="section-title">좌석 배정 안내</h2>
+    <p class="sub">
+      1. 학생은 매월 원하는 좌석 하나를 신청합니다.<br>
+      2. 같은 좌석에 신청자가 여러 명이어도 신청할 수 있습니다.<br>
+      3. 최종 배정 시 점수가 높은 학생이 우선합니다.<br>
+      4. 점수가 같다면 먼저 신청한 학생이 우선합니다.<br>
+      5. 이 버전은 브라우저 안에서만 동작하는 시제품이며, 실제 학생 간 데이터 공유나 관리자 인증은 구현되지 않았습니다.
+    </p>
+  </section>
+</main>
+
+<footer>STUDYSEAT · Monthly Seat Selection Prototype</footer>
+
+<script>
+const students = {
+  A: { score: 85 },
+  B: { score: 92 },
+  C: { score: 78 },
+  D: { score: 92 },
+  E: { score: 88 },
+  F: { score: 80 }
+};
+
+let currentStudent = "";
+let selectedSeat = "";
+let applications = JSON.parse(localStorage.getItem("seatApplications") || "[]");
+const seatNames = Array.from({length:25}, (_, i) =>
+  "A-" + String(i + 1).padStart(2, "0")
+);
+
+function saveApplications() {
+  localStorage.setItem("seatApplications", JSON.stringify(applications));
+}
+
+function startBooking() {
+  document.getElementById("reservation").scrollIntoView({behavior:"smooth"});
+}
+
+function enterSeats() {
+  const student = document.getElementById("student").value;
+  if (!student) {
+    alert("학생을 선택해 주세요.");
+    return;
+  }
+  currentStudent = student;
+  selectedSeat = "";
+  const existing = applications.find(a => a.student === student);
+  if (existing) selectedSeat = existing.seat;
+
+  document.getElementById("studentPage").classList.add("hidden");
+  document.getElementById("seatPage").classList.remove("hidden");
+  document.getElementById("resultPage").classList.add("hidden");
+  document.getElementById("welcomeText").textContent =
+    "학생 " + student + " · 점수 " + students[student].score + "점";
+  setStep(2);
+  renderSeats();
+  updateSummary();
+}
+
+function setStep(n) {
+  [1,2,3].forEach(i =>
+    document.getElementById("step" + i).classList.toggle("active", i === n)
+  );
+}
+
+function renderSeats() {
+  const container = document.getElementById("seats");
+  container.innerHTML = "";
+
+  seatNames.forEach(seat => {
+    const applicants = applications.filter(a => a.seat === seat);
+    const mine = applicants.some(a => a.student === currentStudent);
+    const button = document.createElement("button");
+    button.className = "seat" + (selectedSeat === seat ? " selected" : "");
+    if (applicants.length && !mine) button.classList.add("pending");
+
+    button.innerHTML = seat + "<small>" +
+      (mine ? "내 신청" : applicants.length ? "신청 " + applicants.length + "명" : "선택 가능") +
+      "</small>";
+
+    button.onclick = () => {
+      selectedSeat = seat;
+      renderSeats();
+      updateSummary();
+    };
+    container.appendChild(button);
+  });
+
+  const uniqueApplied = new Set(applications.map(a => a.seat)).size;
+  document.getElementById("availableCount").textContent =
+    (25 - uniqueApplied) + "석";
+}
+
+function updateSummary() {
+  document.getElementById("chosenSeat").textContent = selectedSeat || "없음";
+  document.getElementById("chosenScore").textContent =
+    students[currentStudent].score + "점";
+  document.getElementById("selectionStatus").textContent =
+    selectedSeat ? selectedSeat + " 선택됨" : "좌석을 선택해 주세요";
+}
+
+function submitSeat() {
+  if (!selectedSeat) {
+    alert("먼저 원하는 좌석을 선택해 주세요.");
+    return;
+  }
+
+  const existing = applications.find(a => a.student === currentStudent);
+  if (existing) {
+    existing.seat = selectedSeat;
+    existing.score = students[currentStudent].score;
+    existing.updatedAt = Date.now();
+  } else {
+    applications.push({
+      student: currentStudent,
+      seat: selectedSeat,
+      score: students[currentStudent].score,
+      time: Date.now()
+    });
+  }
+
+  saveApplications();
+  document.getElementById("seatPage").classList.add("hidden");
+  document.getElementById("resultPage").classList.remove("hidden");
+  document.getElementById("resultStudent").textContent = "학생 " + currentStudent;
+  document.getElementById("resultSeat").textContent = selectedSeat;
+  document.getElementById("resultOrder").textContent =
+    applications.findIndex(a => a.student === currentStudent) + 1;
+  setStep(3);
+  renderSeats();
+}
+
+function showMyApplication() {
+  const a = applications.find(a => a.student === currentStudent);
+  document.getElementById("myApplication").textContent = a
+    ? "현재 희망 좌석: " + a.seat + " · 점수: " + a.score + "점 · 최종 배정 대기 중"
+    : "신청 내역이 없습니다.";
+}
+
+function backToStudent() {
+  document.getElementById("seatPage").classList.add("hidden");
+  document.getElementById("studentPage").classList.remove("hidden");
+  setStep(1);
+}
+
+function goHome() {
+  document.getElementById("resultPage").classList.add("hidden");
+  document.getElementById("studentPage").classList.remove("hidden");
+  setStep(1);
+  document.getElementById("reservation").scrollIntoView({behavior:"smooth"});
+}
+
+renderSeats();
+</script>
+</body>
+</html>
